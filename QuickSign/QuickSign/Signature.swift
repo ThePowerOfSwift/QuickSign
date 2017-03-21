@@ -1,4 +1,4 @@
-//
+//  resources: http://stackoverflow.com/questions/8460119/how-to-resize-uiview-by-dragging-from-its-edges
 //  Signature.swift
 //  QuickSign
 //
@@ -9,21 +9,23 @@
 import UIKit
 
 class Signature: UIImageView {
-    var lastLocation:CGPoint = CGPoint.init(x: 0, y: 0)
-    let kResizeThumbSize:CGFloat = 45.0
-    var touchLocation:CGPoint! = CGPoint.init(x: 0, y: 0)
-    var isResizingLR: Bool = false
-    var isResizeBtnDragged: Bool = false
-    var isResizeBtnVisible: Bool = false
-    var imageRatio: CGFloat?
-    
+    let resizeThumbSize:CGFloat  = 30.0
+    let widthContraint:CGFloat   = 100.0
+    var ratio:CGFloat            = 1.0
+    var isResizeBtnDragged:Bool  = false
+    var isResizeBtnVisible:Bool  = false
+    var isResizingLR:Bool        = false
+    var lastLocation:CGPoint     = CGPoint.init(x: 0, y: 0)
+    var touchWhenBegan:CGPoint!  = CGPoint.init(x: 0, y: 0)
+    var touchWhenMoved:CGPoint!  = CGPoint.init(x: 0, y: 0)
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        //enable user interaction on self, important!
+        //important!
         self.isUserInteractionEnabled = true
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(detectPan))
+        //let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(detectPan))
         let tabRecognizer = UITapGestureRecognizer(target:self, action:#selector(detectTap))
-        self.gestureRecognizers = [panRecognizer,tabRecognizer]
+        self.gestureRecognizers = [tabRecognizer]
         
         //adding the signature saved eariler
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
@@ -49,14 +51,14 @@ class Signature: UIImageView {
         deleteButton.addTarget(self, action: #selector(deleteButtonAction), for: .touchUpInside)
         //add resize button to the subview
         let resizeButton = SignatureResizeButton(frame: CGRect(x: self.bounds.maxX-30, y:self.bounds.maxY-30, width: 30, height: 30))
-        resizeButton.addTarget(self, action: #selector(resizeButtonAction), for: .touchDragInside)
-        
+        resizeButton.isUserInteractionEnabled = false
+        //resizeButton.addTarget(self, action: #selector(resizeButtonAction), for: .touchDragInside)
+        //resizeButton.addTarget(self, action: #selector(resizeButtonAction), for: .touchDragInside)
         tappedView.addSubview(deleteButton)
         tappedView.addSubview(resizeButton)
         tappedView.isUserInteractionEnabled = true
         tappedView.isHidden = true
         tappedView.tag = 99
-        print(tappedView.tag)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -68,91 +70,66 @@ class Signature: UIImageView {
     }
     
     func resizeButtonAction(sender: SignatureResizeButton!, events: UIEvent) {
-        print("resize button is being dragged")
-        let touches = events.touches(for:sender)! as Set<UITouch>
+    }
+    
+    func detectTap(recognizer:UITapGestureRecognizer) {
+        // Toggle: show/hide button on tap
+        self.subviews.first?.isHidden = !(self.subviews.first?.isHidden)!;
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print("being touched")
+        // Bring the touched view to the front
+        self.superview?.bringSubview(toFront: self)
+        // Prepare for resizing
+        if let touch = touches.first {
+            touchWhenBegan = touch.location(in: self)
+        }
+        
+        isResizingLR = (self.bounds.size.width - touchWhenBegan.x < resizeThumbSize && self.bounds.size.height - touchWhenBegan.y < resizeThumbSize)
+        
+        //lastLocation = self.center
+        
+        let width:CGFloat  = self.frame.size.width;
+        let height:CGFloat = self.frame.size.height;
+        ratio = width/height
+
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        //let touches = events.touches(for:sender)! as Set<UITouch>
+        let deltaWidth:CGFloat = touchWhenMoved.x - touchWhenBegan.x;
+        let x:CGFloat = self.frame.origin.x;
+        let y:CGFloat = self.frame.origin.y;
         let containerVw = self
         let tappedView = self.subviews.first
         let resizeBtn = self.subviews.first?.subviews.last
         
         if let touch = touches.first {
-            touchLocation = touch.location(in:self)
+            touchWhenMoved = touch.location(in: self)
         }
         
-        
-        isResizingLR = (self.bounds.size.width - touchLocation.x < kResizeThumbSize && self.bounds.size.height - touchLocation.y < kResizeThumbSize);
-        
-        isResizeBtnVisible = !(self.subviews.first?.isHidden)!
-        
-        print("Are you dragging the corner?")
+        //isResizingLR = (self.bounds.size.width - touchWhenMoved.x < resizeThumbSize && self.bounds.size.height - touchWhenMoved.y < resizeThumbSize)
+        print("is it being dragged")
         print(isResizingLR)
-        
-        let deltaWidth:CGFloat = touchLocation.x-lastLocation.x;
-        
-        if (isResizingLR && isResizeBtnVisible) {
+        if (isResizingLR) {
             print("resizing")
-            containerVw.frame = CGRect(x:(containerVw.frame.origin.x), y:(containerVw.frame.origin.y), width:touchLocation.x + deltaWidth, height:touchLocation.x + deltaWidth);
-            tappedView?.frame = (tappedView?.superview?.bounds)!
-            resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
+            if containerVw.frame.width >= widthContraint {
+                containerVw.frame = CGRect(x:x,
+                                           y:y,
+                                           width:touchWhenMoved.x+deltaWidth/10,
+                                           height:(touchWhenMoved.x+deltaWidth/10)/ratio)
+                tappedView?.frame = (tappedView?.superview?.bounds)!
+                resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
+            }
+            if containerVw.frame.width < widthContraint{
+                containerVw.frame = CGRect(x:x, y:y, width:100, height:100/ratio);
+                tappedView?.frame = (tappedView?.superview?.bounds)!
+                resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
+            }
+        } else{
+            self.center = CGPoint.init(x:self.center.x + touchWhenMoved.x - touchWhenBegan.x,y:self.center.y + touchWhenMoved.y - touchWhenBegan.y);
         }
-        
-        if (!isResizingLR) {
-            print("not resizing")
-            containerVw.center = CGPoint.init(x:(containerVw.center.x) + touchLocation.x -  lastLocation.x, y:(containerVw.center.y) + touchLocation.y - lastLocation.y);
-        }
-    }
-
-    func detectPan(recognizer:UIPanGestureRecognizer) {
-        let translation  = recognizer.translation(in: self.superview!)
-
-        self.center = CGPoint.init(x: lastLocation.x + translation.x, y: lastLocation.y + translation.y)
-
-    }
-    
-    func detectTap(recognizer:UITapGestureRecognizer) {
-        //show button on touch
-        self.subviews.first?.isHidden = !(self.subviews.first?.isHidden)!;
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // Bring the touched view to the front
-        self.superview?.bringSubview(toFront: self)
-        
-        // Remember original location
-        lastLocation = self.center
-
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-
-//        let containerVw = self
-//        let tappedView = self.subviews.first
-//        let resizeBtn = self.subviews.first?.subviews.last
-//        
-//        if let touch = touches.first {
-//            touchLocation = touch.location(in:self)
-//        }
-//        
-//        isResizingLR = (self.bounds.size.width - touchLocation.x < kResizeThumbSize && self.bounds.size.height - touchLocation.y < kResizeThumbSize);
-//        
-//        isResizeBtnVisible = !(self.subviews.first?.isHidden)!
-//        
-//        print("Are you dragging the corner?")
-//        print(isResizingLR)
-//        
-//        let deltaWidth:CGFloat = touchLocation.x-lastLocation.x;
-//        
-//        if (isResizingLR && isResizeBtnVisible) {
-//            print("resizing")
-//            containerVw.frame = CGRect(x:(containerVw.frame.origin.x), y:(containerVw.frame.origin.y), width:touchLocation.x + deltaWidth, height:touchLocation.x + deltaWidth);
-//            tappedView?.frame = (tappedView?.superview?.bounds)!
-//            resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
-//        }
-//        
-//        if (!isResizingLR) {
-//            print("not resizing")
-//            containerVw.center = CGPoint.init(x:(containerVw.center.x) + touchLocation.x -  lastLocation.x, y:(containerVw.center.y) + touchLocation.y - lastLocation.y);
-//        }
-        
     }
     
 }

@@ -16,18 +16,17 @@ class SingleFormView: UIViewController {
     
     @IBAction func AddSignature(_ sender: Any) {
         
-        let newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 70, height: 70))
+        let newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 100, height: 100))
         formImageView.addSubview(newView)
     }
     override func viewDidLoad() {
         super.viewDidLoad()
         formImageView.image = image
-        //enable user interaction for subview, important!
+        //important!
         formImageView.isUserInteractionEnabled = true
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -39,16 +38,4 @@ class SingleFormView: UIViewController {
             }
         }
     }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
