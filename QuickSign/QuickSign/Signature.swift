@@ -12,7 +12,7 @@ class Signature: UIImageView {
     let resizeThumbSize:CGFloat  = 30.0
     let widthContraint:CGFloat   = 100.0
     var ratio:CGFloat            = 1.0
-    var isResizeBtnDragged:Bool  = false
+    //var isResizeBtnDragged:Bool  = false
     var isResizeBtnVisible:Bool  = false
     var isResizingLR:Bool        = false
     var lastLocation:CGPoint     = CGPoint.init(x: 0, y: 0)
@@ -86,6 +86,12 @@ class Signature: UIImageView {
             touchWhenBegan = touch.location(in: self)
         }
         
+        if (self.subviews.first?.isHidden)! == false {
+            isResizeBtnVisible = true
+        }else{
+            isResizeBtnVisible = false
+        }
+        
         isResizingLR = (self.bounds.size.width - touchWhenBegan.x < resizeThumbSize && self.bounds.size.height - touchWhenBegan.y < resizeThumbSize)
         
         //lastLocation = self.center
@@ -108,10 +114,9 @@ class Signature: UIImageView {
         if let touch = touches.first {
             touchWhenMoved = touch.location(in: self)
         }
-        
+
         //isResizingLR = (self.bounds.size.width - touchWhenMoved.x < resizeThumbSize && self.bounds.size.height - touchWhenMoved.y < resizeThumbSize)
-        print("is it being dragged")
-        print(isResizingLR)
+
         if (isResizingLR) {
             print("resizing")
             if containerVw.frame.width >= widthContraint {
@@ -128,7 +133,9 @@ class Signature: UIImageView {
                 resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
             }
         } else{
-            self.center = CGPoint.init(x:self.center.x + touchWhenMoved.x - touchWhenBegan.x,y:self.center.y + touchWhenMoved.y - touchWhenBegan.y);
+            if isResizeBtnVisible {
+                self.center = CGPoint.init(x:self.center.x + touchWhenMoved.x - touchWhenBegan.x,y:self.center.y + touchWhenMoved.y - touchWhenBegan.y);
+            }
         }
     }
     
