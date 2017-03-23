@@ -9,8 +9,11 @@
 import UIKit
 
 class SignatureViewController: UIViewController {
-    @IBOutlet weak var myImageView: UIImageView!
+    //@IBOutlet weak var myImageView: UIImageView!
     var signatureDirectoryPath:String!
+
+    @IBOutlet weak var myImageView: DrawingImageView!
+    var signatureImage: UIImage?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,16 +29,19 @@ class SignatureViewController: UIViewController {
     
     @IBAction func clearSignature(_ sender: Any) {
         self.myImageView.image = nil
+        //self.myImageView.clearImage()
     }
     
     @IBAction func saveSignature(_ sender: Any) {
-        
-//        if let image = self.myImageView.image {
-//            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-//        }
         var imagePath = "signatureSample"
         imagePath = signatureDirectoryPath.appending("/\(imagePath).png")
+        if(self.myImageView.image == nil){
+            alertNoSignatureSaved()
+            return
+        }
         let data = UIImagePNGRepresentation(self.myImageView.image!)
+        //let signatureImage = myImageView?.getTheImage()
+        //let data = UIImagePNGRepresentation(signatureImage!)
         FileManager.default.createFile(
             atPath: imagePath,
             contents: data,
@@ -45,7 +51,6 @@ class SignatureViewController: UIViewController {
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     func createDirectory(){
@@ -67,6 +72,13 @@ class SignatureViewController: UIViewController {
         }
         print(signatureDirectoryPath)
     }
-
-
+    func alertNoSignatureSaved(){
+        let alert = UIAlertController(title: "Cannot Save",
+                                      message: "No Signature created", preferredStyle: .alert)
+        let firstAction = UIAlertAction(title: "I understand", style: .default) {
+            (alert: UIAlertAction!) -> Void in
+        }
+        alert.addAction(firstAction)
+        self.present(alert, animated: true, completion: nil)
+    }
 }
