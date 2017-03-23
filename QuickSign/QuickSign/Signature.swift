@@ -12,7 +12,6 @@ class Signature: UIImageView {
     let resizeThumbSize:CGFloat  = 30.0
     let widthContraint:CGFloat   = 100.0
     var ratio:CGFloat            = 1.0
-    //var isResizeBtnDragged:Bool  = false
     var isResizeBtnVisible:Bool  = false
     var isResizingLR:Bool        = false
     var lastLocation:CGPoint     = CGPoint.init(x: 0, y: 0)
@@ -22,6 +21,7 @@ class Signature: UIImageView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         //important!
+        //self.isMultipleTouchEnabled = false
         self.isUserInteractionEnabled = true
         //let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(detectPan))
         let tabRecognizer = UITapGestureRecognizer(target:self, action:#selector(detectTap))
@@ -60,6 +60,7 @@ class Signature: UIImageView {
         tappedView.isHidden = true
         tappedView.tag = 99
     }
+
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder:aDecoder)
@@ -78,7 +79,6 @@ class Signature: UIImageView {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("being touched")
         // Bring the touched view to the front
         self.superview?.bringSubview(toFront: self)
         // Prepare for resizing
@@ -93,8 +93,6 @@ class Signature: UIImageView {
         }
         
         isResizingLR = (self.bounds.size.width - touchWhenBegan.x < resizeThumbSize && self.bounds.size.height - touchWhenBegan.y < resizeThumbSize)
-        
-        //lastLocation = self.center
         
         let width:CGFloat  = self.frame.size.width;
         let height:CGFloat = self.frame.size.height;
