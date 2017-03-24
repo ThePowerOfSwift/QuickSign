@@ -36,7 +36,6 @@ class SingleFormView: UIViewController {
         if let dirPath          = paths.first
         {
             let imageURL = URL(fileURLWithPath: dirPath+"/MySignature").appendingPathComponent("/signatureSample.png")
-            print(imageURL)
             let image    = UIImage(contentsOfFile: imageURL.path)
             if(image?.size.width != nil){
                 isSignatureCreated = true
@@ -52,21 +51,21 @@ class SingleFormView: UIViewController {
     }
 
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
-//        let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
-//        let paths               = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
-//        if let dirPath          = paths.first
-//        {
-//            let imageURL = URL(fileURLWithPath: dirPath+"/MySignature").appendingPathComponent("/signatureSample.png")
-//            print(imageURL)
-//            let image    = UIImage(contentsOfFile: imageURL.path)
-//            ratio = (image?.size.width)!/(image?.size.height)!
-//            self.image = image
-//            print("existing ratio")
-//            print(ratio)
-//        }
-//    }
+    override func viewWillAppear(_ animated: Bool) {
+        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
+        let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
+        let paths               = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+        if let dirPath          = paths.first
+        {
+            let imageURL = URL(fileURLWithPath: dirPath+"/MySignature").appendingPathComponent("/signatureSample.png")
+            print(imageURL)
+            let image    = UIImage(contentsOfFile: imageURL.path)
+            ratio = (image?.size.width)!/(image?.size.height)!
+            self.image = image
+            print("existing ratio")
+            print(ratio)
+        }
+    }
     func alertNoSignature(){
         let alert = UIAlertController(title: "Cannot Add",
                                       message: "No Signature created", preferredStyle: .alert)

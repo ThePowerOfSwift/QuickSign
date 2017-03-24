@@ -28,20 +28,24 @@ class SignatureViewController: UIViewController {
 
     
     @IBAction func clearSignature(_ sender: Any) {
-        self.myImageView.image = nil
-        //self.myImageView.clearImage()
+        //self.myImageView.image = nil
+        self.myImageView.clearImage()
     }
     
     @IBAction func saveSignature(_ sender: Any) {
         var imagePath = "signatureSample"
         imagePath = signatureDirectoryPath.appending("/\(imagePath).png")
-        if(self.myImageView.image == nil){
+        //if(self.myImageView.image == nil){
+//        alertNoSignatureSaved()
+//        return
+//    }
+        //let data = UIImagePNGRepresentation(self.myImageView.image!)
+        let signatureImage = myImageView?.getTheImage()
+        if(signatureImage == nil){
             alertNoSignatureSaved()
             return
         }
-        let data = UIImagePNGRepresentation(self.myImageView.image!)
-        //let signatureImage = myImageView?.getTheImage()
-        //let data = UIImagePNGRepresentation(signatureImage!)
+        let data = UIImagePNGRepresentation(signatureImage!)
         FileManager.default.createFile(
             atPath: imagePath,
             contents: data,
