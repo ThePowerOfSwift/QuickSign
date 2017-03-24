@@ -9,8 +9,9 @@
 import UIKit
 
 class Signature: UIImageView {
-    let resizeThumbSize:CGFloat  = 30.0
-    let widthContraint:CGFloat   = 100.0
+    let resizeThumbSize:CGFloat  = 20.0
+    let btnWidth:CGFloat         = 30.0
+    let widthContraint:CGFloat   = 30.0
     var ratio:CGFloat            = 1.0
     var isResizeBtnVisible:Bool  = false
     var isResizingLR:Bool        = false
@@ -18,6 +19,7 @@ class Signature: UIImageView {
     var touchWhenBegan:CGPoint!  = CGPoint.init(x: 0, y: 0)
     var touchWhenMoved:CGPoint!  = CGPoint.init(x: 0, y: 0)
 
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         //important!
@@ -40,17 +42,15 @@ class Signature: UIImageView {
         }
         //add tapped view with buttons & border
         let tappedView = UIView(frame: CGRect(x:0, y:0, width:self.frame.size.width, height: self.frame.size.height))
-
-        //border color
-        tappedView.layer.borderColor = UIColor.black.cgColor
+        tappedView.layer.borderColor = UIColor.purple.cgColor
         tappedView.layer.borderWidth = 2
         self.addSubview(tappedView)
         
         //add delete button to the subview
-        let deleteButton = SignatureDeleteButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+        let deleteButton = SignatureDeleteButton(frame: CGRect(x: 0, y: 0, width: btnWidth, height: btnWidth))
         deleteButton.addTarget(self, action: #selector(deleteButtonAction), for: .touchUpInside)
         //add resize button to the subview
-        let resizeButton = SignatureResizeButton(frame: CGRect(x: self.bounds.maxX-30, y:self.bounds.maxY-30, width: 30, height: 30))
+        let resizeButton = SignatureResizeButton(frame: CGRect(x: self.bounds.maxX-btnWidth, y:self.bounds.maxY-btnWidth, width: btnWidth, height: btnWidth))
         resizeButton.isUserInteractionEnabled = false
         //resizeButton.addTarget(self, action: #selector(resizeButtonAction), for: .touchDragInside)
         //resizeButton.addTarget(self, action: #selector(resizeButtonAction), for: .touchDragInside)
@@ -71,6 +71,7 @@ class Signature: UIImageView {
     }
     
     func resizeButtonAction(sender: SignatureResizeButton!, events: UIEvent) {
+        //Nothing here
     }
     
     func detectTap(recognizer:UITapGestureRecognizer) {
@@ -113,28 +114,44 @@ class Signature: UIImageView {
             touchWhenMoved = touch.location(in: self)
         }
 
-        //isResizingLR = (self.bounds.size.width - touchWhenMoved.x < resizeThumbSize && self.bounds.size.height - touchWhenMoved.y < resizeThumbSize)
-
         if (isResizingLR) {
             print("resizing")
+
             if containerVw.frame.width >= widthContraint {
                 containerVw.frame = CGRect(x:x,
                                            y:y,
                                            width:touchWhenMoved.x+deltaWidth/10,
                                            height:(touchWhenMoved.x+deltaWidth/10)/ratio)
-                tappedView?.frame = (tappedView?.superview?.bounds)!
-                resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
             }
-            if containerVw.frame.width < widthContraint{
-                containerVw.frame = CGRect(x:x, y:y, width:100, height:100/ratio);
-                tappedView?.frame = (tappedView?.superview?.bounds)!
-                resizeBtn?.frame = CGRect(x:self.bounds.maxX-30, y: self.bounds.maxY-30, width:30, height:30 );
+            if (containerVw.frame.width < widthContraint){
+                containerVw.frame = CGRect(x:x, y:y, width:widthContraint, height:widthContraint/ratio);
             }
+            if (containerVw.frame.height < widthContraint){
+                containerVw.frame = CGRect(x:x, y:y, width:widthContraint*ratio, height:widthContraint);
+            }
+            tappedView?.frame = (tappedView?.superview?.bounds)!
+            resizeBtn?.frame = CGRect(x:self.bounds.maxX-btnWidth, y: self.bounds.maxY-btnWidth, width:btnWidth, height:btnWidth );
+
         } else{
             if isResizeBtnVisible {
-                self.center = CGPoint.init(x:self.center.x + touchWhenMoved.x - touchWhenBegan.x,y:self.center.y + touchWhenMoved.y - touchWhenBegan.y);
+                let midPointX: CGFloat = self.bounds.midX
+                let midPointY: CGFloat = self.bounds.midY
+                var newPoint = CGPoint(x: self.center.x + ((touchWhenMoved?.x)! - touchWhenBegan.x), y: self.center.y + ((touchWhenMoved?.y)! - touchWhenBegan.y))
+                //-----------restrain signature within superview----------
+                if newPoint.x > (self.superview?.bounds.size.width)! - midPointX {
+                    newPoint.x = (self.superview?.bounds.size.width)! - midPointX
+                }else if newPoint.x < midPointX {
+                    newPoint.x = midPointX
+                }
+                
+                if newPoint.y > (self.superview?.bounds.size.height)! - midPointY {
+                    newPoint.y = (self.superview?.bounds.size.height)! - midPointY
+                }else if newPoint.y < midPointY {
+                    newPoint.y = midPointY
+                }
+                
+                self.center = newPoint
             }
         }
     }
-    
 }

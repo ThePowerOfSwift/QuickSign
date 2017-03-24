@@ -19,7 +19,7 @@ class SignatureDeleteButton: UIButton {
     */
     required public override init(frame: CGRect) {
         super.init(frame: frame)
-        let deleteImage = UIImage(named: "delete.png")! as UIImage
+        let deleteImage = UIImage(named: "delete-purple.png")! as UIImage
         
         self.setBackgroundImage(deleteImage, for: .normal)
 //        self.layer.cornerRadius = 10

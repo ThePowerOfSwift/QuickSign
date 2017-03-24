@@ -19,7 +19,7 @@ class SignatureResizeButton: UIButton {
     */
     required public override init(frame: CGRect) {
         super.init(frame: frame)
-        let deleteImage = UIImage(named: "arrow-lr.png")! as UIImage
+        let deleteImage = UIImage(named: "arrow-purple.png")! as UIImage
         
         self.setBackgroundImage(deleteImage, for: .normal)
         self.isUserInteractionEnabled = true

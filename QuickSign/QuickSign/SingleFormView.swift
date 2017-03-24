@@ -10,17 +10,42 @@ import UIKit
 
 class SingleFormView: UIViewController {
     @IBOutlet weak var formImageView: UIImageView!
+    let initHorizontalWidth:CGFloat = 60.0
+    let initVerticalHeight:CGFloat = 50.0
     var ratio:CGFloat = 1.0
     var image: UIImage? = nil
     var isSignatureCreated: Bool?
     var destinationMessage: String = ""
+    var newView:Signature = Signature(frame: CGRect.init())
     
     @IBAction func AddSignature(_ sender: Any) {
         if(!isSignatureCreated!){
             alertNoSignature()
             return
         }else{
-            let newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 100, height:100/ratio ))
+
+            var width:CGFloat = 0.0
+            var height:CGFloat = 0.0
+            if (ratio>1){
+                //if horizontal
+                width = initHorizontalWidth
+                if(width/ratio < 30.0){
+                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 30*ratio, height:30 ))
+                }else{
+                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: width, height:width/ratio ))
+                }
+
+            }else{
+                //if vertical
+                height = initVerticalHeight
+                if height*ratio<30.0{
+                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 30, height:30/ratio ))
+                }else{
+                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: height*ratio, height:height ))
+                }
+
+            }
+
             formImageView.addSubview(newView)
         }
     }
@@ -50,7 +75,7 @@ class SingleFormView: UIViewController {
         }
     }
 
-    
+    //update the signature width
     override func viewWillAppear(_ animated: Bool) {
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
         let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
@@ -87,5 +112,7 @@ class SingleFormView: UIViewController {
                 }
             }
         }
+
     }
+    
 }
