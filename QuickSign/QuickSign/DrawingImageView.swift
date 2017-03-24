@@ -20,7 +20,7 @@ class DrawingImageView: UIView {
     var path: CGMutablePath? = nil
     
     let DEFAULT_COLOR = UIColor.black
-    let DEFAULT_WIDTH = 5.0
+    let DEFAULT_WIDTH = 3.0
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -84,14 +84,10 @@ class DrawingImageView: UIView {
     func getTheImage() -> UIImage {
         
         var imageSize = (self.path?.boundingBox.size)!
-        print("boundingbox size")
-        print(imageSize)
         imageSize.width += lineWidth*2
         imageSize.height += lineWidth*2
-        print("boundingbox size")
-        print(imageSize)
-
-        UIGraphicsBeginImageContext(imageSize)
+        
+        UIGraphicsBeginImageContextWithOptions(imageSize, false, 0)
         let context = UIGraphicsGetCurrentContext()
 
         // translate matrix so that path will be centered in bounds
