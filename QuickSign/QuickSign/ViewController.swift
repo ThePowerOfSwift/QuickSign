@@ -26,8 +26,8 @@ class ViewController: UIViewController,UITableViewDelegate,
         super.viewDidLoad()
         
         //force portrait
-        let value = UIInterfaceOrientation.portrait.rawValue
-        UIDevice.current.setValue(value, forKey: "orientation")
+//        let value = UIInterfaceOrientation.portrait.rawValue
+//        UIDevice.current.setValue(value, forKey: "orientation")
         
         imagePicker?.delegate = self
         createDirectory()
@@ -36,7 +36,7 @@ class ViewController: UIViewController,UITableViewDelegate,
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        //force landscape
+        //force portrait
         let value = UIInterfaceOrientation.portrait.rawValue
         UIDevice.current.setValue(value, forKey: "orientation")
     }

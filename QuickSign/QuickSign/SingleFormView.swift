@@ -19,6 +19,10 @@ class SingleFormView: UIViewController {
     var destinationMessage: String = ""
     var newView:Signature = Signature(frame: CGRect.init())
     
+    @IBAction func scaleForm(_ sender: UIPinchGestureRecognizer) {
+        formImageView.transform = formImageView.transform.scaledBy(x: sender.scale, y: sender.scale)
+        sender.scale = 1
+    }
     @IBAction func AddSignature(_ sender: Any) {
         if(!isSignatureCreated!){
             alertNoSignature()
@@ -53,6 +57,9 @@ class SingleFormView: UIViewController {
         formImageView.image = image
         formImageView.isUserInteractionEnabled = true
         formImageView.contentMode = UIViewContentMode.scaleAspectFit;
+        
+        //TO DO:call the saved formImageView
+        //var restoredImageView: UIImageView? = NSKeyedUnarchiver.unarchiveObject(with: dataToRestore)
 
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
         let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
@@ -72,6 +79,12 @@ class SingleFormView: UIViewController {
             }
         }
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        //force portrait
+        let value = UIInterfaceOrientation.portrait.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
+    }
 
     //update the signature width
     override func viewWillAppear(_ animated: Bool) {
@@ -89,6 +102,12 @@ class SingleFormView: UIViewController {
             print(ratio)
         }
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        var dataToSave = NSKeyedArchiver.archivedData(withRootObject: formImageView)
+        //To Do: save it somewhere
+    }
+    
     func alertNoSignature(){
         let alert = UIAlertController(title: "Cannot Add",
                                       message: "No Signature created", preferredStyle: .alert)
