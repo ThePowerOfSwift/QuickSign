@@ -21,6 +21,7 @@
 		047052EF1E7F81CB009F4196 /* SignatureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047052EE1E7F81CB009F4196 /* SignatureViewController.swift */; };
 		047052F11E7F8C8B009F4196 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047052F01E7F8C8B009F4196 /* TabBarController.swift */; };
 		047052F31E7F978C009F4196 /* DrawingImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047052F21E7F978C009F4196 /* DrawingImageView.swift */; };
+		04C580F21E8618D400042EF4 /* NavOneController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04C580F11E8618D400042EF4 /* NavOneController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		047052EE1E7F81CB009F4196 /* SignatureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignatureViewController.swift; sourceTree = "<group>"; };
 		047052F01E7F8C8B009F4196 /* TabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		047052F21E7F978C009F4196 /* DrawingImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DrawingImageView.swift; sourceTree = "<group>"; };
+		04C580F11E8618D400042EF4 /* NavOneController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavOneController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 				046C99741E7FB5F20047A84D /* Signature.swift */,
 				0447409D1E8067A0002128D3 /* SignatureDeleteButton.swift */,
 				0447409F1E8080EA002128D3 /* SignatureResizeButton.swift */,
+				04C580F11E8618D400042EF4 /* NavOneController.swift */,
 			);
 			path = QuickSign;
 			sourceTree = "<group>";
@@ -163,6 +166,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04C580F21E8618D400042EF4 /* NavOneController.swift in Sources */,
 				046C99731E7FA2FC0047A84D /* SingleFormView.swift in Sources */,
 				047052E01E7F7048009F4196 /* QuickSign.xcdatamodeld in Sources */,
 				047052EF1E7F81CB009F4196 /* SignatureViewController.swift in Sources */,

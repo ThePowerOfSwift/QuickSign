@@ -12,6 +12,7 @@ class SingleFormView: UIViewController {
     @IBOutlet weak var formImageView: UIImageView!
     let initHorizontalWidth:CGFloat = 60.0
     let initVerticalHeight:CGFloat = 50.0
+    let minSignatureSize:CGFloat = 30.0
     var ratio:CGFloat = 1.0
     var image: UIImage? = nil
     var isSignatureCreated: Bool?
@@ -23,14 +24,13 @@ class SingleFormView: UIViewController {
             alertNoSignature()
             return
         }else{
-
             var width:CGFloat = 0.0
             var height:CGFloat = 0.0
             if (ratio>1){
                 //if horizontal
                 width = initHorizontalWidth
-                if(width/ratio < 30.0){
-                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 30*ratio, height:30 ))
+                if(width/ratio < minSignatureSize){
+                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: minSignatureSize*ratio, height:minSignatureSize ))
                 }else{
                     newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: width, height:width/ratio ))
                 }
@@ -38,21 +38,19 @@ class SingleFormView: UIViewController {
             }else{
                 //if vertical
                 height = initVerticalHeight
-                if height*ratio<30.0{
-                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: 30, height:30/ratio ))
+                if height*ratio < minSignatureSize{
+                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: minSignatureSize, height:minSignatureSize/ratio ))
                 }else{
                     newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: height*ratio, height:height ))
                 }
-
             }
-
             formImageView.addSubview(newView)
         }
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         formImageView.image = image
-        //important!
         formImageView.isUserInteractionEnabled = true
 
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
@@ -71,7 +69,6 @@ class SingleFormView: UIViewController {
             }else{
                 isSignatureCreated = false
             }
-            
         }
     }
 
@@ -112,7 +109,6 @@ class SingleFormView: UIViewController {
                 }
             }
         }
-
     }
     
 }

@@ -57,7 +57,6 @@ class Signature: UIImageView {
         tappedView.addSubview(deleteButton)
         tappedView.addSubview(resizeButton)
         tappedView.isUserInteractionEnabled = true
-        tappedView.isHidden = true
         tappedView.tag = 99
     }
 

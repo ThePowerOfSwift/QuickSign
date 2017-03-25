@@ -10,21 +10,11 @@ import UIKit
 
 class SignatureDeleteButton: UIButton {
 
-    /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
-    }
-    */
     required public override init(frame: CGRect) {
         super.init(frame: frame)
-        let deleteImage = UIImage(named: "delete-purple.png")! as UIImage
         
+        let deleteImage = UIImage(named: "delete-purple.png")! as UIImage
         self.setBackgroundImage(deleteImage, for: .normal)
-//        self.layer.cornerRadius = 10
-//        self.layer.borderWidth = 2
-//        self.layer.borderColor = UIColor.black.cgColor
         self.isUserInteractionEnabled = true
     }
     

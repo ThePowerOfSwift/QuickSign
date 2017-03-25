@@ -24,10 +24,21 @@ class ViewController: UIViewController,UITableViewDelegate,
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //force portrait
+        let value = UIInterfaceOrientation.portrait.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
+        
         imagePicker?.delegate = self
         createDirectory()
         refreshTable()
         self.title = "Quick Sign"
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        //force landscape
+        let value = UIInterfaceOrientation.portrait.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
     }
     
     func openMyGallary()

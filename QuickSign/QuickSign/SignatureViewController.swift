@@ -17,6 +17,7 @@ class SignatureViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         self.title = "Create Signature"
         createDirectory()
         // Do any additional setup after loading the view.
@@ -25,8 +26,12 @@ class SignatureViewController: UIViewController {
         myImageView.isUserInteractionEnabled = true
         myImageView.isOpaque = false
     }
-
     
+    override func viewDidAppear(_ animated: Bool) {
+        let value = UIInterfaceOrientation.landscapeLeft.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
+    }
+  
     @IBAction func clearSignature(_ sender: Any) {
         //self.myImageView.image = nil
         self.myImageView.clearImage()
@@ -85,4 +90,5 @@ class SignatureViewController: UIViewController {
         alert.addAction(firstAction)
         self.present(alert, animated: true, completion: nil)
     }
+    
 }
