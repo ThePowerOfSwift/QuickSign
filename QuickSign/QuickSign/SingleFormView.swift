@@ -52,6 +52,7 @@ class SingleFormView: UIViewController {
         
         formImageView.image = image
         formImageView.isUserInteractionEnabled = true
+        formImageView.contentMode = UIViewContentMode.scaleAspectFit;
 
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
         let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
