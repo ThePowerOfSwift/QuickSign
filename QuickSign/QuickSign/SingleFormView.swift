@@ -191,47 +191,6 @@ class SingleFormView: UIViewController {
         }
     }
     
-    func saveSubViews(){
-//        print("saving subviews")
-//        if(self.view.viewWithTag(100) != nil){
-//            let filename = trimImageName(imageName!) + "-subviews"
-//            //let dataToSave = NSKeyedArchiver.archivedData(withRootObject: formImageView )
-//            let fullPath = getDocumentsDirectory().appendingPathComponent("MyFormViews", isDirectory: true).appendingPathComponent(filename)
-//            do {
-//                //try dataToSave.write(to: fullPath)
-//                try NSKeyedArchiver.archiveRootObject(formImageView.subviews as! [Signature], toFile: fullPath.path)
-//                print("Saved to path")
-//                print(fullPath)
-//            } catch {
-//                print("Couldn't write file")
-//            }
-//        }
-    }
-    
-    func loadSubViews(){
-//        print("loading subviews")
-//        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
-//        let url = NSURL(fileURLWithPath: path)
-//        //load subviews if exists
-//        let filename = trimImageName(imageName!) + "-subviews"
-//        let filePath = url.appendingPathComponent("MyFormViews", isDirectory: true)?.appendingPathComponent(filename)
-//        let fileManager = FileManager.default
-//        
-//        if fileManager.fileExists(atPath: filePath!.path) {
-//            print("SUBVIEW FILE EXISTS")
-//            print((filePath?.absoluteString)!)
-//            //let subViews = NSKeyedUnarchiver.unarchiveObject(withFile: (filePath?.absoluteString)!) as? UIImageView
-//            let subViews = NSKeyedUnarchiver.unarchiveObject(withFile: (filePath?.absoluteString)!) as? [Signature]
-//            for subView in subViews! {
-//                    print("add subviews")
-//                    subView.tag = 100
-//                    formImageView.addSubview(subView)
-//            }
-//        } else {
-//            print("SUBVIEW FILE NOT AVAILABLE")
-//        }
-    }
-    
     // Trim ".png" off ImageName
     func trimImageName (_ str: String) -> String{
         let start = str.index(str.startIndex, offsetBy: 0)
@@ -241,7 +200,7 @@ class SingleFormView: UIViewController {
         return str.substring(with: range)
     }
     
-    // Helper Function: get document directory
+    // get document directory
     func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let documentsDirectory = paths.first
