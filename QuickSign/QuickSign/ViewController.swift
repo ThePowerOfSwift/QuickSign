@@ -9,7 +9,9 @@
 import UIKit
 
 class ViewController: UIViewController,UITableViewDelegate,
-    UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+                        UITableViewDataSource,
+                        UIImagePickerControllerDelegate,
+                        UINavigationControllerDelegate {
 
     var imagePicker:UIImagePickerController?=UIImagePickerController()
     var images:[UIImage]!
@@ -25,14 +27,12 @@ class ViewController: UIViewController,UITableViewDelegate,
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //force portrait
-//        let value = UIInterfaceOrientation.portrait.rawValue
-//        UIDevice.current.setValue(value, forKey: "orientation")
-        
         imagePicker?.delegate = self
         createDirectory()
         refreshTable()
         self.title = "Quick Sign"
+        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshTable), name:NSNotification.Name(rawValue: "Load Table"), object: nil)
+
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -52,13 +52,11 @@ class ViewController: UIViewController,UITableViewDelegate,
         images = []
         
         let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
-        // Get the Document directory path
         let documentDirectorPath:String = paths[0]
-        // Create a new path for the new images folder
         imagesDirectoryPath = documentDirectorPath.appendingFormat("/MyAppImages")
         var objcBool:ObjCBool = true
         let isExist = FileManager.default.fileExists(atPath: imagesDirectoryPath, isDirectory: &objcBool)
-        // If the folder with the given path doesn't exist already, create it
+        // If the folder with given path doesn't exist, create it
         if isExist == false{
             do{
                 try FileManager.default.createDirectory(atPath: imagesDirectoryPath, withIntermediateDirectories: true, attributes: nil)
@@ -70,14 +68,8 @@ class ViewController: UIViewController,UITableViewDelegate,
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        
         //display in imageView
         if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            /*
-             //show last open image in imageView
-             myImageView.contentMode = .scaleAspectFit
-             myImageView.image = pickedImage
-             */
             
             // Save image to Document directory
             var imagePath = NSDate().description
@@ -146,7 +138,6 @@ class ViewController: UIViewController,UITableViewDelegate,
         dismiss(animated: true, completion: nil)
     }
     
-    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -155,17 +146,14 @@ class ViewController: UIViewController,UITableViewDelegate,
     override func prepare(for segue: UIStoryboardSegue,
                           sender: Any?) {
         if (segue.identifier == "showForm") {
-            // Create an instance of the next view controller.
             let vc        = segue.destination as! SingleFormView
             let indexPath = myTableView.indexPathForSelectedRow
             let rowNum    = indexPath!.row
             let image : UIImage = images[rowNum]
 
-            // Pass the row number and label value to the destination.
             vc.destinationMessage = "Row " + String(rowNum)
+            vc.imageName = titles[rowNum]
             vc.image = image
-            // Debug output.
-            print("Going to view 2.")
         }
     }
     

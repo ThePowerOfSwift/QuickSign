@@ -18,7 +18,7 @@ class Signature: UIImageView {
     var lastLocation:CGPoint     = CGPoint.init(x: 0, y: 0)
     var touchWhenBegan:CGPoint!  = CGPoint.init(x: 0, y: 0)
     var touchWhenMoved:CGPoint!  = CGPoint.init(x: 0, y: 0)
-
+    var position:CGRect?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -58,11 +58,18 @@ class Signature: UIImageView {
         tappedView.addSubview(resizeButton)
         tappedView.isUserInteractionEnabled = true
         tappedView.tag = 99
+        position = self.frame
     }
 
     
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder:aDecoder)
+        //super.init(coder:aDecoder)
+        position = aDecoder.decodeObject(forKey: "frame") as? CGRect
+        super.init(frame: CGRect(x: (position?.origin.x)!, y: (position?.origin.y)!, width: (position?.width)!, height: (position?.height)!))
+    }
+    
+    override func encode(with aCoder: NSCoder) {
+        aCoder.encode(position, forKey: "frame")
     }
     
     func deleteButtonAction(sender: SignatureDeleteButton!) {
