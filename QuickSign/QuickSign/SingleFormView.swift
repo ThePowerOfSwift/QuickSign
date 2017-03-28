@@ -33,11 +33,16 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         formImageView.image = image
         formImageView.isUserInteractionEnabled = true
         formImageView.contentMode = UIViewContentMode.scaleAspectFit;
-
+        webView.delegate = self
+        
         self.checkFolderExists("/MyFormViews")
         self.checkFolderExists("/MySignature")
         self.checkSignatureCreated()
         self.loadPDFifExist()
+
+        let browserView = webView.scrollView
+        print(browserView.contentSize.height)
+
         
     }
     
@@ -51,7 +56,6 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
     override func viewWillAppear(_ animated: Bool) {
         // Monitor signature size changes
         self.checkSignatureCreated()
-
     }
     
     
@@ -73,6 +77,7 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
+
     
     /*-----------------------------------------
      *           Gesture Action
@@ -89,6 +94,10 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
      *----------------------------------------*/
     
     @IBAction func AddSignature(_ sender: Any) {
+        //get current page number
+        print("current page")
+        let currentPageNum = self.getActualPageNum()
+        print(currentPageNum)
         if(!isSignatureCreated!){
             alertNoSignature()
             return
@@ -105,16 +114,13 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
             var objcBool:ObjCBool = false
             let isExist = FileManager.default.fileExists(atPath: pdfPath, isDirectory: &objcBool)
             
-//            newView.tag = 100
             if isExist{
-                self.initSubView(webView.scrollView)
+                self.initSubView(webView.scrollView.subviews.first!)
                 webView.scrollView.addSubview(newView)
             }else{
                 self.initSubView(formImageView)
                 formImageView.addSubview(newView)
             }
-            print("tag #")
-            print(newView.tag)
         }
     }
     
@@ -193,7 +199,15 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
     /*-----------------------------------------
      *           Helper Functions
      *----------------------------------------*/
-
+    func getActualPageNum() -> Int {
+        let scrollViewHeight: Float = Float(webView.frame.size.height)
+        let pageOffset: Float = Float(webView.scrollView.contentOffset.y)
+        let windowRect:CGRect = self.view.window!.frame
+        let windowHeight:Float = Float(windowRect.size.height);
+        let zoom:Float = Float(webView.scrollView.zoomScale)
+        let pageNum = ceilf(((pageOffset + windowHeight/2) / scrollViewHeight)/zoom)
+        return Int(pageNum);
+    }
     func saveToPdf(_ oldpath:String) {
         let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         let documentDirectorPath:String = paths[0]
@@ -228,12 +242,19 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         context.scaleBy(x: 1.0, y: -1.0);
         
         // add the signature
-        let uiImage = self.convertToImage()
+        let signature:UIView? = webView.scrollView.viewWithTag(100)
+        let signX = signature!.frame.origin.x
+        let signY = signature!.frame.origin.y
+        let superView:UIView = signature!.superview!
+
+        let heightDiff = formImageView.frame.maxY - superView.frame.maxY
+
+        let uiImage = self.convertToImage(signature!)
         let contextCI = CIContext()
         let inputImage = CIImage(image: uiImage)
         let logo:CGImage = contextCI.createCGImage(inputImage!, from: inputImage!.extent)!
         
-        let frame = CGRect.init(x: 20, y: 500, width: uiImage.size.width, height: uiImage.size.height)
+        let frame = CGRect.init(x: signX, y: signY+heightDiff, width: uiImage.size.width, height: uiImage.size.height)
         context.draw(logo, in: frame)
         
         // get the 2nd page
@@ -248,15 +269,13 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         
     }
     
-    func convertToImage() -> UIImage{
-        let subView:UIView? = webView.scrollView.viewWithTag(100)
-        print(subView?.tag)
-        UIGraphicsBeginImageContextWithOptions((subView?.bounds.size)!, false, 0.0)
+    func convertToImage(_ subView:UIView) -> UIImage{
+        UIGraphicsBeginImageContextWithOptions(subView.bounds.size, false, 0.0)
         let context: CGContext? = UIGraphicsGetCurrentContext()
-        context?.translateBy(x: 0, y: (subView?.bounds.size.height)!);
+        context?.translateBy(x: 0, y: subView.bounds.size.height);
         context?.scaleBy(x: 1, y: -1);
-        subView?.layer.render(in: context!)
-        context?.translateBy(x: 0, y: (subView?.bounds.size.height)!);
+        subView.layer.render(in: context!)
+        context?.translateBy(x: 0, y: subView.bounds.size.height);
         context?.scaleBy(x: 1, y: -1);
         let snapshotImage: UIImage? = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
