@@ -93,8 +93,7 @@ class ViewController: UIViewController,UITableViewDelegate,
 
             print(answer.text!)
             let myURL = URL(string: answer.text!)
-            //let urlRequest = NSURLRequest(url: myURL!)
-           // let fileName = myURL?.lastPathComponent
+            // TO DO: validation
             do {
                 let pdfData = try NSData(contentsOf: myURL!, options: NSData.ReadingOptions())
                 let image = self.drawImagefromURL(url: myURL!)
@@ -224,8 +223,8 @@ class ViewController: UIViewController,UITableViewDelegate,
         cell.textLabel?.text = "Form #" + String(indexPath.row + 1)
         
         //add date as subtitle
-        let index = titles[indexPath.row].index(titles[indexPath.row].startIndex, offsetBy: 10)
-        cell.detailTextLabel?.text = titles[indexPath.row].substring(to: index)
+//        let index = titles[indexPath.row].index(titles[indexPath.row].startIndex, offsetBy: 10)
+//        cell.detailTextLabel?.text = titles[indexPath.row].substring(to: index)
 
         return cell
     }

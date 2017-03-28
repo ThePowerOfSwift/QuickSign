@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import MessageUI
 
-class SingleFormView: UIViewController {
+class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,MFMailComposeViewControllerDelegate {
     @IBOutlet weak var formImageView: UIImageView!
     let initHorizontalWidth:CGFloat = 60.0
     let initVerticalHeight:CGFloat = 50.0
@@ -21,6 +22,7 @@ class SingleFormView: UIViewController {
     var imageName:String?
     var isSubViewExist:Bool?
     var isSignatureExist:Bool?
+    var webView = UIWebView()
 
     /*-----------------------------------------
     *           Overrid Functions
@@ -35,7 +37,8 @@ class SingleFormView: UIViewController {
         self.checkFolderExists("/MyFormViews")
         self.checkFolderExists("/MySignature")
         self.checkSignatureCreated()
-        //self.loadSubViews()
+        self.loadPDFifExist()
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -46,15 +49,14 @@ class SingleFormView: UIViewController {
     
     
     override func viewWillAppear(_ animated: Bool) {
-        // Monitor signature changes
+        // Monitor signature size changes
         self.checkSignatureCreated()
-        //self.loadSubViews()
+
     }
     
     
     override func viewWillDisappear(_ animated: Bool) {
-        // Save subviews
-        //self.saveSubViews()
+        // Nothing Here
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -91,33 +93,178 @@ class SingleFormView: UIViewController {
             alertNoSignature()
             return
         }else{
-
-            var width:CGFloat = 0.0
-            var height:CGFloat = 0.0
-            if (ratio>1){
-                //if horizontal
-                width = initHorizontalWidth
-                if(width/ratio < minSignatureSize){
-                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: minSignatureSize*ratio, height:minSignatureSize ))
-                }else{
-                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: width, height:width/ratio ))
-                }
-                
-            }else{
-                //if vertical
-                height = initVerticalHeight
-                if height*ratio < minSignatureSize{
-                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: minSignatureSize, height:minSignatureSize/ratio ))
-                }else{
-                    newView = Signature(frame: CGRect.init(x: formImageView.bounds.size.width/2, y: formImageView.bounds.size.height/2, width: height*ratio, height:height ))
-                }
+            let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
+            let nsUserDomainMask = FileManager.SearchPathDomainMask.userDomainMask
+            let paths = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+            guard let dirPath = paths.first else {
+                return
             }
-            newView.tag = 100
-            formImageView.addSubview(newView)
+            
+            let pdfLocation = self.trimImageName(imageName!) + ".pdf"
+            let pdfPath = "\(dirPath)/MyAppImages/\(pdfLocation)"
+            var objcBool:ObjCBool = false
+            let isExist = FileManager.default.fileExists(atPath: pdfPath, isDirectory: &objcBool)
+            
+//            newView.tag = 100
+            if isExist{
+                self.initSubView(webView.scrollView)
+                webView.scrollView.addSubview(newView)
+            }else{
+                self.initSubView(formImageView)
+                formImageView.addSubview(newView)
+            }
+            print("tag #")
+            print(newView.tag)
         }
     }
     
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.presentingViewController?.dismiss(animated: true, completion: nil)
+    }
+    
     @IBAction func saveToCameraRoll(_ sender: Any) {
+        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
+        let nsUserDomainMask = FileManager.SearchPathDomainMask.userDomainMask
+        let paths = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+        guard let dirPath = paths.first else {
+            return
+        }
+        
+        let pdfLocation = self.trimImageName(imageName!) + ".pdf"
+        let oldPdfPath = "\(dirPath)/MyAppImages/\(pdfLocation)"
+        var objcBool:ObjCBool = false
+        let isExist = FileManager.default.fileExists(atPath: oldPdfPath, isDirectory: &objcBool)
+        if isExist {
+            //save new pdf in export folder
+            self.saveToPdf(oldPdfPath)
+            print("pdf saved")
+//            if MFMailComposeViewController.canSendMail() {
+//                let mc = MFMailComposeViewController()
+//                mc.mailComposeDelegate = self
+//                let newFilePath = "\(dirPath)/MyExportFiles/\(pdfLocation)"
+//                let fileData = NSData(contentsOfFile: newFilePath)
+//                
+//                mc.addAttachmentData(fileData as! Data, mimeType: "application/pdf", fileName: pdfLocation)
+//                self.present(mc, animated: true, completion: nil)
+//            } else {
+//                // show failure alert
+//            }
+
+        } else{
+            self.saveToCamera()
+        }
+
+    }
+
+    @IBAction func deleteForm(_ sender: Any) {
+        let fileManager = FileManager.default
+        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
+        let nsUserDomainMask = FileManager.SearchPathDomainMask.userDomainMask
+        let paths = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+        guard let dirPath = paths.first else {
+                return
+        }
+        let imageLocation = self.trimImageName(imageName!) + ".png"
+        let imagePath = "\(dirPath)/MyAppImages/\(imageLocation)"
+        do {
+            try fileManager.removeItem(atPath: imagePath)
+        } catch let error as NSError {
+            print("CANNOT DELETE IMAGE")
+            print(error.debugDescription)
+        }
+        // if a pdf with the same name exist
+        let pdfLocation = self.trimImageName(imageName!) + ".pdf"
+        let pdfPath = "\(dirPath)/MyAppImages/\(pdfLocation)"
+        var objcBool:ObjCBool = false
+        let isExist = FileManager.default.fileExists(atPath: pdfPath, isDirectory: &objcBool)
+        if isExist{
+            do {
+                try fileManager.removeItem(atPath: pdfPath)
+            } catch let error as NSError {
+                print("CANNOT DELETE PDF")
+                print(error.debugDescription)
+            }
+        }
+        // TO DO: go back to previous controller after deletion
+        
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "Load Table"), object: nil)
+    }
+    
+    /*-----------------------------------------
+     *           Helper Functions
+     *----------------------------------------*/
+
+    func saveToPdf(_ oldpath:String) {
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+        let documentDirectorPath:String = paths[0]
+        let fileName = self.trimImageName(imageName!) + ".pdf"
+        self.checkFolderExists("/MyExportFiles")
+        let newPath = documentDirectorPath.appendingFormat("/MyExportFiles/").appending(fileName)
+        
+        //new path
+        UIGraphicsBeginPDFContextToFile(newPath, CGRect.zero, nil);
+        // Mark the beginning of a new page.
+        UIGraphicsBeginPDFPageWithInfo(CGRect.init(x:0, y:0, width:612, height:792), nil);
+        
+        //open template file
+        let url = URL(string: "file://" + oldpath)
+        let templateDocument:CGPDFDocument = CGPDFDocument(url as! CFURL)!;
+        
+        //get bounds of template page
+        var templatePage:CGPDFPage = templateDocument.page(at: 1)!;
+        let templatePageBounds:CGRect = templatePage.getBoxRect(CGPDFBox(rawValue: 1)!);
+        
+        let context:CGContext = UIGraphicsGetCurrentContext()!;
+        
+        //flip context due to different origins, important
+        context.translateBy(x: 0.0, y: templatePageBounds.size.height);
+        context.scaleBy(x: 1.0, y: -1.0);
+        
+        //copy content of template page on the corresponding page in new file
+        context.drawPDFPage(templatePage);
+        
+        //flip context back, important
+        context.translateBy(x: 0.0, y: templatePageBounds.size.height);
+        context.scaleBy(x: 1.0, y: -1.0);
+        
+        // add the signature
+        let uiImage = self.convertToImage()
+        let contextCI = CIContext()
+        let inputImage = CIImage(image: uiImage)
+        let logo:CGImage = contextCI.createCGImage(inputImage!, from: inputImage!.extent)!
+        
+        let frame = CGRect.init(x: 20, y: 500, width: uiImage.size.width, height: uiImage.size.height)
+        context.draw(logo, in: frame)
+        
+        // get the 2nd page
+        templatePage = templateDocument.page(at: 2)!;
+        UIGraphicsBeginPDFPageWithInfo(CGRect.init(x:0, y:0, width:612, height:792), nil);
+        context.translateBy(x: 0.0, y: templatePageBounds.size.height);
+        context.scaleBy(x: 1.0, y: -1.0);
+        context.drawPDFPage(templatePage);
+        
+        // Close the PDF context and write the contents out.
+        UIGraphicsEndPDFContext();
+        
+    }
+    
+    func convertToImage() -> UIImage{
+        let subView:UIView? = webView.scrollView.viewWithTag(100)
+        print(subView?.tag)
+        UIGraphicsBeginImageContextWithOptions((subView?.bounds.size)!, false, 0.0)
+        let context: CGContext? = UIGraphicsGetCurrentContext()
+        context?.translateBy(x: 0, y: (subView?.bounds.size.height)!);
+        context?.scaleBy(x: 1, y: -1);
+        subView?.layer.render(in: context!)
+        context?.translateBy(x: 0, y: (subView?.bounds.size.height)!);
+        context?.scaleBy(x: 1, y: -1);
+        let snapshotImage: UIImage? = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return snapshotImage!
+    }
+
+    
+    func saveToCamera(){
         let allSignatures = formImageView.subviews
         //if any signatures are added
         if allSignatures.count != 0 {
@@ -133,29 +280,67 @@ class SingleFormView: UIViewController {
             //TO DO: Add Alert
         }
     }
+    func initSubView(_ targetView:UIView){
+        var width:CGFloat = 0.0
+        var height:CGFloat = 0.0
+        if (ratio>1){
+            //if horizontal
+            width = initHorizontalWidth
+            if(width/ratio < minSignatureSize){
+                newView = Signature(frame: CGRect.init(x: targetView.bounds.size.width/2, y: targetView.bounds.size.height/2, width: minSignatureSize*ratio, height:minSignatureSize ))
+            }else{
+                newView = Signature(frame: CGRect.init(x: targetView.bounds.size.width/2, y: targetView.bounds.size.height/2, width: width, height:width/ratio ))
+            }
+            
+        }else{
+            //if vertical
+            height = initVerticalHeight
+            if height*ratio < minSignatureSize{
+                newView = Signature(frame: CGRect.init(x: targetView.bounds.size.width/2, y: targetView.bounds.size.height/2, width: minSignatureSize, height:minSignatureSize/ratio ))
+            }else{
+                newView = Signature(frame: CGRect.init(x: targetView.bounds.size.width/2, y: targetView.bounds.size.height/2, width: height*ratio, height:height ))
+            }
+        }
+        newView.tag = 100
+    }
     
-    @IBAction func deleteForm(_ sender: Any) {
-
-        let fileManager = FileManager.default
+    
+    
+    func loadPDFifExist(){
+        webView = UIWebView(frame: CGRect(x: formImageView.bounds.origin.x,
+                                          y: formImageView.bounds.origin.y,
+                                          width: formImageView.bounds.width,
+                                          height: formImageView.bounds.height))
+        webView.scalesPageToFit = true
+        webView.scrollView.isScrollEnabled = true
+        webView.scrollView.delegate = self
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
         let nsUserDomainMask = FileManager.SearchPathDomainMask.userDomainMask
         let paths = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
         guard let dirPath = paths.first else {
-                return
+            return
         }
-        let filePath = "\(dirPath)/MyAppImages/\(imageName!)"
-        do {
-            try fileManager.removeItem(atPath: filePath)
-        } catch let error as NSError {
-            print("CANNOT DELETE IMAGE")
-            print(error.debugDescription)
+
+        let pdfLocation = self.trimImageName(imageName!) + ".pdf"
+        let pdfPath = "\(dirPath)/MyAppImages/\(pdfLocation)"
+        var objcBool:ObjCBool = false
+        let isExist = FileManager.default.fileExists(atPath: pdfPath, isDirectory: &objcBool)
+        if isExist{
+            do {
+                let pdfPath = "\(dirPath)/MyAppImages/\(pdfLocation)"
+                let targetURL = NSURL(string: pdfPath)!
+                
+                let request = NSURLRequest(url: targetURL as URL)
+                //let pdf: CGPDFDocument? = CGPDFDocument(targetURL)
+                formImageView.image = nil
+                webView.loadRequest(request as URLRequest)
+                formImageView.addSubview(webView)
+            } catch let error as NSError {
+                print("CANNOT DELETE PDF")
+                print(error.debugDescription)
+            }
         }
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "Load Table"), object: nil)
     }
-    
-    /*-----------------------------------------
-     *           Helper Functions
-     *----------------------------------------*/
     
     func checkSignatureCreated(){
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
@@ -218,4 +403,19 @@ class SingleFormView: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
+}
+
+extension UIPrintPageRenderer {
+    func printToPDF() -> NSData {
+        let pdfData = NSMutableData()
+        UIGraphicsBeginPDFContextToData(pdfData, self.paperRect, nil)
+        self.prepare(forDrawingPages: NSMakeRange(0, self.numberOfPages))
+        let bounds = UIGraphicsGetPDFContextBounds()
+        for i in 0..<self.numberOfPages {
+            UIGraphicsBeginPDFPage();
+            self.drawPage(at: i, in: bounds)
+        }
+        UIGraphicsEndPDFContext();
+        return pdfData;
+    }
 }

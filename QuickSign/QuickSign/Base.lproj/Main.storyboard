@@ -44,9 +44,9 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="2Xe-EF-a1a"/>
                                 </connections>
                             </tableView>
-                            <button opaque="NO" contentMode="scaleAspectFit" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mJ1-GO-reA">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mJ1-GO-reA">
                                 <rect key="frame" x="36" y="110" width="50" height="50"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" image="camera-roll">
                                     <color key="titleColor" red="0.99265393700000004" green="1" blue="0.96590477620000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
