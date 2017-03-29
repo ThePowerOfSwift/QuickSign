@@ -9,7 +9,9 @@
 import UIKit
 import MessageUI
 
-class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,MFMailComposeViewControllerDelegate {
+class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
+    MFMailComposeViewControllerDelegate
+{
     @IBOutlet weak var formImageView: UIImageView!
     let initHorizontalWidth:CGFloat = 60.0
     let initVerticalHeight:CGFloat = 50.0
@@ -23,6 +25,9 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
     var isSubViewExist:Bool?
     var isSignatureExist:Bool?
     var webView = UIWebView()
+    var beforeZoom = CGPoint.zero
+    var afterZoom = CGPoint.zero
+    var allowLoad = true
 
     /*-----------------------------------------
     *           Overrid Functions
@@ -33,18 +38,21 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         formImageView.image = image
         formImageView.isUserInteractionEnabled = true
         formImageView.contentMode = UIViewContentMode.scaleAspectFit;
-        webView.delegate = self
+        webView.scrollView.delegate = self
+        
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(detectTapWebView))
+        let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(scaleForm))
+        tapRecognizer.numberOfTapsRequired = 1
+        formImageView.gestureRecognizers = [tapRecognizer,pinchRecognizer]
+
         
         self.checkFolderExists("/MyFormViews")
         self.checkFolderExists("/MySignature")
         self.checkSignatureCreated()
         self.loadPDFifExist()
 
-        let browserView = webView.scrollView
-        print(browserView.contentSize.height)
-
-        
     }
+    
     
     override func viewDidAppear(_ animated: Bool) {
         //force portrait
@@ -57,7 +65,6 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         // Monitor signature size changes
         self.checkSignatureCreated()
     }
-    
     
     override func viewWillDisappear(_ animated: Bool) {
         // Nothing Here
@@ -73,12 +80,11 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
             }
         }
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
 
-    
     /*-----------------------------------------
      *           Gesture Action
      *----------------------------------------*/
@@ -86,7 +92,16 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
     @IBAction func scaleForm(_ sender: UIPinchGestureRecognizer) {
         formImageView.transform = formImageView.transform
             .scaledBy(x: sender.scale, y: sender.scale)
+
         sender.scale = 1
+    }
+    
+    func detectTapWebView(recognizer: UITapGestureRecognizer) {
+        for v in (webView.scrollView.subviews) {
+            if v.subviews.first?.isHidden == false{
+                v.subviews.first?.isHidden = true
+            }
+        }
     }
     
     /*-----------------------------------------
@@ -115,7 +130,8 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
             let isExist = FileManager.default.fileExists(atPath: pdfPath, isDirectory: &objcBool)
             
             if isExist{
-                self.initSubView(webView.scrollView.subviews.first!)
+                self.initSubView(webView.scrollView)
+                webView.scrollView.pinchGestureRecognizer?.isEnabled = false
                 webView.scrollView.addSubview(newView)
             }else{
                 self.initSubView(formImageView)
@@ -175,7 +191,6 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         do {
             try fileManager.removeItem(atPath: imagePath)
         } catch let error as NSError {
-            print("CANNOT DELETE IMAGE")
             print(error.debugDescription)
         }
         // if a pdf with the same name exist
@@ -187,7 +202,6 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
             do {
                 try fileManager.removeItem(atPath: pdfPath)
             } catch let error as NSError {
-                print("CANNOT DELETE PDF")
                 print(error.debugDescription)
             }
         }
@@ -199,6 +213,7 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
     /*-----------------------------------------
      *           Helper Functions
      *----------------------------------------*/
+    
     func getActualPageNum() -> Int {
         let scrollViewHeight: Float = Float(webView.frame.size.height)
         let pageOffset: Float = Float(webView.scrollView.contentOffset.y)
@@ -208,6 +223,7 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
         let pageNum = ceilf(((pageOffset + windowHeight/2) / scrollViewHeight)/zoom)
         return Int(pageNum);
     }
+    
     func saveToPdf(_ oldpath:String) {
         let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         let documentDirectorPath:String = paths[0]
@@ -330,9 +346,9 @@ class SingleFormView: UIViewController, UIWebViewDelegate, UIScrollViewDelegate,
                                           y: formImageView.bounds.origin.y,
                                           width: formImageView.bounds.width,
                                           height: formImageView.bounds.height))
-        webView.scalesPageToFit = true
-        webView.scrollView.isScrollEnabled = true
-        webView.scrollView.delegate = self
+        //webView.scalesPageToFit = true
+        //webView.scrollView.delegate = self
+        
         let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
         let nsUserDomainMask = FileManager.SearchPathDomainMask.userDomainMask
         let paths = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)

@@ -5,6 +5,7 @@
 //  Created by mac on 2017-03-19.
 //  Copyright © 2017 max. All rights reserved.
 //
+//  PDF resource  https://github.com/ILearniOS/PDF-Reader
 
 import UIKit
 
